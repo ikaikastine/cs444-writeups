@@ -48,6 +48,8 @@
 		\par
 		Windows, FreeBSD, and Linux all have their own implementations for handling processes, threads and scheduling. Both Windows and Linux utilize a type of preemptive multitasking and while FreeBSD can preempt threads executing in kernel mode, it is generally not done. Each of the three operating systems use a round-robin algorithm for handling all processes without a priority. Round robin seems to be a relatively simple and easy to implement algorithm which prevents the issue of starvation. Since all three operating systems use time slices, it makes sense that they would all use round robin. Setting the priority of threads and processes differs between Windows and Linux. On Windows, the priority is determined by a combination priority class of the process and the priority level of the thread, giving a unique number on the scale from zero to thirty-one. On FreeBSD and Linux, the priority is measured on the nice scale, from -20 to 19 (Linux) or 20 (FreeBSD). The amount of time used for the timeslice is very different between FreeBSD and Linux. FreeBSD uses a constant 100ms for their time slice, while Linux determines the time slice dynamically, based on the process priority and ranges from 10ms to 300ms. It seems like across the board, round-robin is the best choice for scheduling threads without a priority. From there however, the three operating systems take different routes on how to determine priority, and how to determine the time slice that each thread will be given.
 
+	\clearpage
+		
 	\begin{thebibliography}{3}
 		\bibitem{FreeBSD}
 			Marshall Kirk McCusick and George V. Neville-Neil,
@@ -64,6 +66,6 @@
 		\bibitem{Windows}
 			Windows Dev Center,
 			About Processes and Threads,
-			Microsoft Corporation,
+			Microsoft Corporation
 	\end{thebibliography}
 \end{document}
