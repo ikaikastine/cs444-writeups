@@ -40,6 +40,12 @@
 		Currently, the kernel in FreeBSD is preemptive, however they only preempt a kernel thread when they release a sleep mutex or when an interrupt comes in.
 		Having a fully preemptive kernel is in the pipeline for the future FreeBSD kernel.
 
+		Windows utilizes the Windows Driver Framework (WDF) which allows for drivers to handle a devices hardware interrupts.
+		In order for a WDF driver to handle a device's hardware interrupts, it must first create a framework object for each interrupt that each device can support.
+		In the most recent versions of Windows (8 and newer), Kernel-Mode Driver Frameworks (KMDF) and User-Mode Driver Frameworks (UMDF) drivers can create interrupt objects requiring passive-level handling.
+		Passive-level handling is used in specific cases such as System on a Chip (SoC) platforms, but most drivers should utilize DIRQL interrupt objects.
+
+
 	\clearpage
 
 	\begin{thebibliography}{3}
