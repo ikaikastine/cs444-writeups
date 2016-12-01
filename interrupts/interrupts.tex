@@ -1,0 +1,62 @@
+\documentclass[letterpaper,10pt,draftclsnofoot,onecolumn,titlepage]{IEEEtran}
+
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{alltt}
+\usepackage{float}
+\usepackage{color}
+\usepackage{url}
+\usepackage{enumitem}
+\usepackage{pstricks, pst-node}
+\usepackage{geometry}
+\usepackage{longtable}
+
+\geometry{margin = .75in}
+
+\def\name{Kevin Stine}
+
+\begin{document}
+	\title{\huge Writing Topic 3: Interrupts\\CS 444 Fall 2016}
+	\author{\large \name}
+	\maketitle
+	\newpage
+	\section*{Interrupts}
+		Modern operating systems are complex beasts comprised of various functionality such as I/O, process scheduling, file systems, interrupts and synchronization.
+	  In operating systems, an interrupt is a signal to the processor that is emitted by hardware or software indicating an event that needs immediate attention.
+		Interrupts are synchronous with respect to the current process meaning that interrupts can happen at any time.
+		Most computers have many devices such as a keyboard, mouse, hard drive, printer and scanners plugged into them.
+		These various devices all need to have access to the CPU, however we are unable to predict exactly when it will need that access.
+		Because of this, modern operating systems contain interrupts, which are a way for the CPU to find out which devices need attention and when.
+		Interrupts work by giving each device an interrupt line that it can use to signal the processor.
+		When the interrupt is signaled, the processor executes a routine called an interrupt handler to deal with the interrupt.
+		The benefit of interrupts is there is no overhead when there are no requests pending.
+		Despite most operating systems using interrupts, their implementation for interrupts and interrupt handling differs between each operating system.
+
+		FreeBSD follows the pattern of other multi-threaded Unix kernels and deals with interrupt handles by giving them their own thread context.
+		Giving an interrupt handler it's own thread context allows for the interrupt handler to block on locks and are run at real-time kernel priority.
+		In FreeBSD, the interrupt threads are referred to as heavyweight interrupt threads because switching to an interrupt thread involves a full context switch.
+		Currently, the kernel in FreeBSD is preemptive, however they only preempt a kernel thread when they release a sleep mutex or when an interrupt comes in.
+		Having a fully preemptive kernel is in the pipeline for the future FreeBSD kernel.
+
+	\clearpage
+
+	\begin{thebibliography}{3}
+		\bibitem{FreeBSD}
+			Marshal McKusick and Keith Bostic,
+			The Design and Implementation of the 4.4BSD Operating System,
+			Addison-Wesley,
+			2016
+		\bibitem{Linux}
+			Robert Love,
+			Linux Kernel Development 3/e,
+			Addison-Wesley,
+			2010,
+			ISBN: 978-1-672-32946-3
+		\bibitem{Windows}
+			Mark Russinovich and Alex Ionescu and David A. Solomon,
+			Understanding the Windows I/O System,
+			2012
+	\end{thebibliography}
+\end{document}
