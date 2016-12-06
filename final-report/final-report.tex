@@ -47,7 +47,72 @@
 	% End Introduction
 
 	% Begin First Topic: I/O and Provided Functionality
+	Input \& Output, also known as I/O, is a functionality that is heavily relied on by all modern operating systems.
+	I/O is fundamental to an operating systems as it allows us to interact with various pieces of hardware such as a keyboard and mouse, and allows for the transfer of data across these devices.
+	Simple tasks such as typing on a keyboard, playing music over Bluetooth, and getting connected to the WiFi all require some variation of I/O.
 
+	FreeBSD is a Unix-like operating system that descended from Research Unix via the Berkeley Software Distribution.
+	Since FreeBSD is an operating system that is Unix-like, it contains a lot of features that are derived from UNIX.
+	The basic model of the Unix I/O system is a sequence of bytes that can be accessed either randomly or sequentially, and there are no access methods and no control blocks in a typical Unix user process.
+	FreeBSD categorizes hardware devices by being either structured or unstructured.
+	Structured devices, also known as block devices, are typically disks, magnetic tapes and include most random access devices.
+	On block oriented devices, the FreeBSD kernel supports read-modify-write-type buffering actions to allow reading and writing in a totally random byte-addressed fashion.
+	On FreeBSD filesystems are created on block devices.
+	Unstructured devices, also known as character devices, are devices which do not support a block structure.
+	These can include communication lines, raster plotters and unbuffered magnetic tapes and disks.
+	Character devices do typically support large block I/O transfers.
+	The BSD kernel introduced an IPC mechanism which is more flexible than pipes and is based on sockets called the Socket IPC.
+	A socket is an endpoint of communication referred to by a descriptor.
+	Two processes can each create a socket, and then connect those two endpoints to produce a reliable byte stream.
+	This new Socket IPC mechanism does essentially what was available previously with the use of pipes without the need for a common parent process to setup the communication channel.
+	The transparency of sockets allows the kernel to redirect the output of one process to the input of another regardless if they have a common parent process.
+	The socket IPC mechanism can also create a connection between sockets on two unrelated process and it can even connect them on different machines.
+	This mechanism widely opens up the functionality of communication between processes however does require extensions to the traditional Unix I/O system calls.
+	Previously, the read and write system calls were used for byte-stream type connections, but six new calls were added to allow sending and receiving addressed messages.
+	The system calls for writing include send, sendto and sendmsg, and the system calls for reading messages include recv, recvfrom, and recvmesg.
+	The FreeBSD kernel used to rely on the traditional read and write system calls, however 4.2BSD introduced the ability to do scatter/gather I/O. \cite{FreeBSD}
+	Scatter/gather I/O is where a single procedure call sequentially reads data from multiple buffers and writes it to a single data stream, or reads data from a data stream and writes it to multiple buffers.
+	Scatter input uses the readv system call to allow a single read to be placed in several different buffers while the writev system call allows several buffers to be written in a single atomic write.
+	Instead of the traditional read and write which passes a single buffer and length parameter, the scatter/gather process passes in a pointer to an array of buffers and lengths, along with a count describing the size of the array.
+
+	The Windows operating system has it's own system for I/O and utilizes it's own I/O manager.
+	The I/O manager is the core of the I/O system on Windows because it defines the orderly framework within which I/O requests are delivered to device drivers. \cite{Windows}
+	The I/O system on Windows is packet driven and is represented by an I/O request packet called an IRP.
+	These IRPs are designed to travel between one I/O system to another, allowing an individual application thread to manage multiple I/O request concurrently.
+	An IRP is created in memory by the I/O manager representing an I/O operation.
+	A pointer to the IRP is then passed to the correct driver until the completion of the I/O operation.
+	Once the I/O operation has completed or needs to be passed on to another driver, the IRP is sent back to the I/O manager to either dispose of, or pass on to another driver.
+	In addition to handling IRPs, the I/O manager provides flexible I/O services that allow environment subsystems, such as Windows and Posix to implement their respective I/O functions.
+	The I/O manager has no knowledge of anything except for files, and passes the responsibility to translate file-oriented comments such as open, close and read to the driver.
+	A typical I/O request starts with an application executing an I/O related function that is processed by the I/O manager, one or more device drivers, and the hardware abstraction layer (HAL).
+	On Windows, threads perform I/O on virtual files which refer to any source or destination for I/O that is treated as if it were a file.
+	This can be anything from files, directories pipes and mailslots.
+	Windows supports two user-mode drivers, the Windows subsystem printer driver which translates device-independent graphic requests to printer-specific commands, and the user-mode driver framework (UMDF) drivers which are hardware device drivers allowed to run in user mode.
+	Kernel-mode device drivers can be broken up into file system drivers, plug and play drivers, and non-plug and play drivers.
+	File system drivers accept I/O requests to files and satisfy request by issuing their own, more explicit requests to mass storage or network device drivers.
+	Plug and play drivers work with hardware and integrate with the windows power manager and PnP (Plug and Play) manager.
+	Non-plug and play drivers are drivers or modules which can be loaded that extend the functionality of the system.
+	The Windows operating system allows I/O operations to be either synchronous or asynchronous.
+	Most I/O operations that applications issue are synchronous, in that the application thread waits while the device performs the data operation and returns a status code when the I/O is complete.
+	This allows for the program to continue and access the data immediately after the I/O is complete.
+	Asynchronous I/O allows an application to issue multiple I/O requests and continue executing them while the device performs it's I/O operations.
+	This can dramatically help improve an application's throughput since it allows the application thread to continue during the I/O operation.
+	Similarly to FreeBSD, Windows also allows for the use of scatter/gather I/O through the ReadFileScatter and WriteFileGatther functions.
+	Windows uniquely has Fast I/O which is a special mechanism that allows the I/O system to bypass generating an IRP and instead go directly to the device driver stack to the complete the I/O request.
+
+	Similarly to Windows and FreeBSD, Linux provides the abstract machine interface to the user through device drivers.
+	The device drivers take a hardware specific interface and map it onto a standard interface within the kernel.
+	As with Windows and FreeBSD, Linux has both block devices and character devices.
+	Character devices essentially behave as a stream of bytes with no random access provided and once a byte is consumed it cannot be replayed. \cite{Linux}
+	These character devices are very straight forward with minimal driver code and straightforward hardware interfaces.
+	As with the other operating systems, block devices on Linux are random access, block addressable disk like devices.
+	On Linux, the Block I/O subsystem (BIO) works on buffers or memory blocks.
+	Each buffer maps to one actual block with a descriptor associated with it known as a buffer head.
+	FreeBSD and Linux are very similar in the way that they implement I/O since FreeBSD also utilizes descriptors to reference I/O streams.
+	As both FreeBSD and Linux are Unix-like, it makes sense that they would have some similarities in how they implement I/O.
+	With FreeBSD and Linux being the most similar in terms of how they implement I/O, each operating system uses functions like read and write to enable the communication between devices.
+	Despite their differences, the implementations for I/O are generally pretty even across the board, with some special functions thrown in like the Socket IPC and Fast I/O.
+	Even though there may be nuances between special functions, each operating system integrates I/O in some major fashion as it is one of the most fundamental needs of an operating system
 
 	% End First Topic: I/O and Provided Functionality
 
@@ -76,7 +141,7 @@
 			Addison-Wesley,
 			2015,
 			ISBN: 978-0-32196897-5
-		\bibitem{LinuxKernelDev}
+		\bibitem{Linux}
 			Robert Love,
 			Linux Kernel Development 3/e,
 			Addison-Wesley,
