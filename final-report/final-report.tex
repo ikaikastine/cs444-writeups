@@ -113,12 +113,63 @@
 	With FreeBSD and Linux being the most similar in terms of how they implement I/O, each operating system uses functions like read and write to enable the communication between devices.
 	Despite their differences, the implementations for I/O are generally pretty even across the board, with some special functions thrown in like the Socket IPC and Fast I/O.
 	Even though there may be nuances between special functions, each operating system integrates I/O in some major fashion as it is one of the most fundamental needs of an operating system
-
 	% End First Topic: I/O and Provided Functionality
 
 	% Begin Second Topic: Interrupts and Synchronization
+	In addition to I/O, modern operating systems utilize interrupts in order to actually process the input \& output that is sent to the computer from external hardware devices.
+	Most computers have many devices such as a keyboard, mouse, hard drive, printer and scanners plugged into them.
+	These various devices all need to have access to the CPU, however we are unable to predict exactly when it will need that access.
+	Because of this, modern operating systems utilize interrupts, a way in which the CPU can find out which devices need attention and when.
+	An interrupt is a signal to the processor that is emitted by hardware or software indicating an event that needs immediate attention.
+	Interrupts are synchronous with respect to the current process meaning that interrupts can happen at any time.
+	They work by giving each device an interrupt line that it can use to signal the processor and when the interrupt is signaled, the processor executes a routine called an interrupt handler to deal with the interrupt.
+	The benefit of interrupts is there is no overhead when there are no requests pending.
 
+	FreeBSD follows the pattern of other multi-threaded Unix kernels and deals with interrupt handles by giving them their own thread context.
+	Giving an interrupt handler it's own thread context allows for the interrupt handler to block on locks and are run at real-time kernel priority.
+	In FreeBSD, the interrupt threads are referred to as heavyweight interrupt threads because switching to an interrupt thread involves a full context switch.
+	Currently, the kernel in FreeBSD is preemptive, however they only preempt a kernel thread when they release a sleep mutex or when an interrupt comes in.
+	Having a fully preemptive kernel is in the pipeline for the future FreeBSD kernel.
+	FreeBSD also supports Message Signaled Interrupts (MSIs) starting with PCI 2.2. This allows each PCI function to have one or more interrupt messages rather than each PCI function being restricted to one.
+	FreeBSD implements MSI messages as sys\_res\_irq interrupts. The PCI bus driver is responsible for programming the various MSI registers.
+	The format of the message address and data fields is platform specific.
+	For x86 platforms, the x86 MSI code uses interrupt source objects to manage IRQs for MSI messages and provides a single struct pic shared by all MSI interrupt sources.
+	Once an MSI interrupt source is created in FreeBSD, it is never destroyed, but may be reused by a different device if it is released by a driver and another driver makes an allocation request.
 
+	Windows utilizes the Windows Driver Framework (WDF) which allows for drivers to handle a devices hardware interrupts. \cite{Windows}
+	In order for a WDF driver to handle a device's hardware interrupts, it must first create a framework object for each interrupt that each device can support.
+	In the most recent versions of Windows (8 and newer), Kernel-Mode Driver Frameworks (KMDF) and User-Mode Driver Frameworks (UMDF) drivers can create interrupt objects requiring passive-level handling.
+	Passive-level handling is used in specific cases such as System on a Chip (SoC) platforms, but most drivers should utilize DIRQL interrupt objects.
+	Windows also supports Message-signaled interrupts (MSIs) which is an alternative in-band method of signaling an interrupt.
+	For MSIs, the driver must create a framework interrupt object for each interrupt vector or MSI message that the device can support.
+	Servicing an interrupt in Windows requires you to save volatile information such as register contents quickly and process the saved volatile information in a deferred procedure call (DPC).
+	Interrupts in Windows are centered around the Interrupt Service Routing (ISR). These are what is used to service the interrupts and the system calls the ISR each time it receives that interrupt.
+	Windows supports two different types of ISRs.
+	The driver can register an InterruptService routine to handle line-based or message-signaled interrupts where the system passes a driver-supplied context value.
+	The driver can also register an InterruptMessageService routine to handle message-signaled interrupts where the system passes both a driver-supplied context value and the message ID of the interrupt message.
+	DIRQL interrupts require the ISR to run while holding a driver-supplied spin lock so that the ISR prevents additional interrupts while it saves volatile information.
+	This helps to ensure that the volatile information is not lost.
+
+	Similarly to Windows and FreeBSD, Linux also uses interrupts to asynchronously give CPU time to devices. \cite{Linux}
+	In Linux, the interrupt mask registers are write only meaning that you must keep a local copy of what the mask registers are set to.
+	Linux modifies these saved masks in the interrupt enable and disable routine and writes the full masks to the registers every time.
+	When an interrupt is signaled, the interrupt handling code reads the two interrupt status registers (ISRs), not to be confused with the Interrupt Service Routing in Windows.
+	In Linux, the kernel's interrupt handling data structures are setup by the device drivers as they request control of the system's interrupts.
+	Individual device driers call these routines to register their interrupt handling routine addresses.
+	Linux also allows for device drivers to probe for their interrupts. Once a device driver causes a device to interrupt, all of the unassigned interrupts in the system are enabled.
+	To handle interrupts, Linux uses a set of pointers to data structures that contain the address of the routines that handle the system's interrupts.
+	This is crucial as the Linux interrupt handling subsystem must route the interrupts to the right pieces of handling code.
+	Each device driver is responsible for requesting the interrupt that is wants when the driver is initialized.
+	Similarly to FreeBSD, the Linux interrupt handling code is architecture specific.
+	When an interrupt occurs, Linux reads the interrupt status register to determine the source. It then translates the source into the irq\_action vector.
+	Linux will check to see if there is an interrupt handler for that interrupt, and if there is, it will call into the interrupt handling routine for all of the irqaction data structures.
+	As with Windows and FreeBSD, Linux also has support for message signaled interrupts.
+
+	Rather than using the polling method, Windows, FreeBSD and Linux all utilize interrupts to handle devices that need CPU time.
+	While the different operating systems may have different meanings for certain acronyms, (ISRs in Linux and Windows), they generally all implement interrupts in a similar fashion.
+	Each operating system supports Message Signaled Interrupts and has it's own version for handling interrupts.
+	FreeBSD and Linux differ from Windows because interrupt handling for FreeBSD and Linux is architecture specific.
+	Windows allows for two different types of interrupt service routing, while Linux just uses a set of pointers to data structures that contain the address of the routines.
 	% End Second Topic: Interrupts and Synchronization
 
 	% Begin Third Topic: Processes and Threads
